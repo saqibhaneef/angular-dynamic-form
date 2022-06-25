@@ -1,0 +1,47 @@
+export class ShowScoringComponent implements OnInit {    
+  public scoringDetailForm: FormGroup;
+  addresses: FormArray;
+  proRatedFields:FormArray;
+  
+  constructor(private myAuth: AuthenticationService,
+    private route: ActivatedRoute,
+    private _notification: NotificationService,
+    public shareDataService: SharedDataService,
+    private fb: FormBuilder) { 
+      this.scoringDetailForm = this.fb.group({
+        proRatedFields: this.fb.array([ this.createProRatedFields() ])
+     });
+    }
+
+  ngOnInit(): void {
+    debugger;
+    this.addProRatedFields();
+  }
+  createProRatedFields(): FormGroup {
+    return this.fb.group({
+      numericProPt: '',
+      numericFromPro: '',
+      numericToPro: ''      
+    });
+ }    
+  addProRatedFields(): void {
+    for (let index = 0; index < 3; index++) {
+      this.proRatedFields = this.scoringDetailForm.get('proRatedFields') as FormArray;
+      this.proRatedFields.push(this.createProRatedFields());  
+    }
+    
+  }
+  get proRatedControls() {
+    return this.scoringDetailForm.get('proRatedFields')['controls'];
+  }
+  onSubmit()
+  {
+    debugger;
+    console.log(this.scoringDetailForm.value);
+    
+  }
+        
+  
+
+
+}
