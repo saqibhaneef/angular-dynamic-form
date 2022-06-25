@@ -1,0 +1,34 @@
+<div class="">          
+          <div class="border my-3 p-lg-4">
+            <form [formGroup]="scoringDetailForm" (ngSubmit)="onSubmit()">
+            <table class="table table-sm table-bordered">
+              <thead class="thead-dark">
+                <tr class="text-center">
+                  <!-- <th>{{position.type}} Positions--{{category.description}} Scoring</th> -->                  
+                  <th *ngIf="positionType=='al'; else All">All Positions--{{category.description}} Scoring</th>                                                                       
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="bg-white text-center " >
+                  <th style="background-color: lightgray;">
+                    <h6>Pro-Rated Points (Points Per {{category.units}})</h6>
+                  </th>                  
+                </tr> 
+                <tr class="bg-white text-center" id="ProRated" formArrayName="proRatedFields"
+                *ngFor="let address of proRatedControls; let i = index;">
+                    <td class="form-inline" [formGroupName]="i">
+                        <span style="margin: auto;">Award</span>
+                        <input style="margin: auto;" name="numericProPt" formControlName="numericProPt" type="text" class="form-control">                         
+                        <span style="margin: auto;">points for each {{category.code}} {{lessOrGreater}}</span>                        
+                        <input style="margin: auto;" name="numericFromPro" formControlName="numericFromPro" type="text" class="form-control">                        
+                        <span style="margin: auto;">until you reach</span>
+                        <input style="margin: auto;" name="numericToPro" formControlName="numericToPro" type="text" class="form-control">                        
+                        <span style="margin: auto;">{{category.units}}s</span>
+                    </td>
+                 </tr>
+              </tbody>
+            </table>
+          </form>
+          </div>
+  
+        </div>
