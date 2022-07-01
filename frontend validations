@@ -1,0 +1,102 @@
+<section>
+      <div class="container">
+        <div class="mt-3 mt-lg-5 text-center">
+          <h5 class="ffd-heading-primary mt-5">
+            NFL Fantasy Football League Scoring Detail
+          </h5>
+        </div>
+        <ng-template #All>
+            <th>{{position.type}} Positions--{{category.description}} Scoring</th>
+        </ng-template>        
+        <div class="">
+          <!-- <h1 *ngIf="textBoxValues.length">{{textBoxValues.length}}</h1>           -->
+          <div class="border my-3 p-lg-4">
+            <form [formGroup]="scoringDetailForm" (ngSubmit)="onSubmit()">
+            <table class="table table-sm table-bordered">
+              <thead class="thead-dark">
+                <tr class="text-center">
+                  <!-- <th>{{position.type}} Positions--{{category.description}} Scoring</th> -->                  
+                  <th *ngIf="positionType=='al'; else All">All Positions--{{category.description}} Scoring</th>                                                                       
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="bg-white text-center " >
+                  <th style="background-color: lightgray;">
+                    <h6>Pro-Rated Points (Points Per {{category.units}})</h6>
+                  </th>                  
+                </tr>                
+                <tr id="NonProRated" formArrayName="textBoxValuesFields"
+                *ngFor="let controls of textBoxValuesControls; let j = index;">
+                    <td class="form-inline" [formGroupName]="j">
+                      <span style="margin: auto;">Award</span>
+                      <input [ngStyle]="{'border-color': textBoxValuesControls[j].touched && textBoxValuesControls[j].invalid ? 'red' : ''}" style="margin: auto;" name="numericNoProPt" formControlName="numericNoProPt" type="text" class="form-control">                         
+                      <span style="margin: auto;">bonus points for {{category.code}}s between</span>                        
+                      <input [ngStyle]="{'border-color': textBoxValuesControls[j].touched && textBoxValuesControls[j].invalid ? 'red' : ''}" style="margin: auto;" name="numericFromNoPro" formControlName="numericFromNoPro" type="text" class="form-control">                        
+                      <span style="margin: auto;">and</span>
+                      <input [ngStyle]="{'border-color': textBoxValuesControls[j].touched && textBoxValuesControls[j].invalid ? 'red' : ''}" style="margin: auto;" name="numericToNoPro" formControlName="numericToNoPro" type="text" class="form-control">                        
+                      <span style="margin: auto;">{{category.units}}s</span>                      
+                      
+                    </td>                   
+                </tr>                
+                <tr>
+                  <td><h1>New</h1></td>
+                </tr>  
+                <tr class="bg-white text-center" id="ProRated" formArrayName="proRatedFields"
+                *ngFor="let controls of proRatedControls; let i = index;">
+                    <td class="form-inline" [formGroupName]="i">
+                        <span style="margin: auto;">Award</span>
+                        <input [ngStyle]="{'border-color': proRatedControls[i].touched && proRatedControls[i].invalid ? 'red' : ''}" style="margin: auto;" name="numericProPt" formControlName="numericProPt" type="text" class="form-control">
+                        <!-- <span *ngIf="proRatedControls[i].touched && proRatedControls[i].invalid" style="color: red;">Required</span>                         -->
+                        <span style="margin: auto;">points for each {{category.code}} {{lessOrGreater}}</span>                        
+                        <input [ngStyle]="{'border-color': proRatedControls[i].touched && proRatedControls[i].invalid ? 'red' : ''}" style="margin: auto;" name="numericFromPro" formControlName="numericFromPro" type="text" class="form-control">                        
+                        <span style="margin: auto;">until you reach</span>
+                        <input [ngStyle]="{'border-color': proRatedControls[i].touched && proRatedControls[i].invalid ? 'red' : ''}" style="margin: auto;" name="numericToPro" formControlName="numericToPro" type="text" class="form-control">                        
+                        <span style="margin: auto;">{{category.units}}s</span>                        
+                        <input type="button" value="-" (click)="RemoveProRatedControl(i)" class="btn btn-sm btn-danger" [disabled]="disableProrated">
+                    </td>                                  
+                  </tr>    
+                  <tr>
+                    <td><input type="button" value="+" (click)="AddProRatedControl()" class="btn btn-sm btn-primary float-right"></td>
+                  </tr>            
+                 <tr class="bg-white text-center" >
+                    <td style="background-color: lightgray;">
+                        <h6>Non-Pro-Rated Points (Bonus Points)*</h6>
+                    </td>                  
+                </tr>
+                <tr id="NonProRated" formArrayName="noProRatedFields"
+                *ngFor="let controls of noProRatedControls; let j = index;">
+                    <td class="form-inline" [formGroupName]="j">
+                      <span style="margin: auto;">Award</span>
+                      <input [ngStyle]="{'border-color': noProRatedControls[j].touched && noProRatedControls[j].invalid ? 'red' : ''}" style="margin: auto;" name="numericNoProPt" formControlName="numericNoProPt" type="text" class="form-control">                         
+                      <span style="margin: auto;">bonus points for {{category.code}}s between</span>                        
+                      <input [ngStyle]="{'border-color': noProRatedControls[j].touched && noProRatedControls[j].invalid ? 'red' : ''}" style="margin: auto;" name="numericFromNoPro" formControlName="numericFromNoPro" type="text" class="form-control">                        
+                      <span style="margin: auto;">and</span>
+                      <input [ngStyle]="{'border-color': noProRatedControls[j].touched && noProRatedControls[j].invalid ? 'red' : ''}" style="margin: auto;" name="numericToNoPro" formControlName="numericToNoPro" type="text" class="form-control">                        
+                      <span style="margin: auto;">{{category.units}}s</span>                      
+                      <input type="button" value="-" (click)="RemoveNoProRatedControl(j)" class="btn btn-sm btn-danger" [disabled]="disableNoProrated">
+                    </td>                   
+                </tr>
+                <tr>
+                  <td><input type="button" value="+" (click)="AddNoProRatedControl()" class="btn btn-primary btn-sm float-right"></td>
+                </tr>
+                <tr class="bg-white text-center" >
+                    <td >
+                        <p>To get more rows first complete and submit the available rows above
+                        <br>*You may award both prorated and non-prorated points to this scoring category</p>
+                    </td>                  
+                </tr>
+                <tr class="bg-white text-center" >
+                    <td>
+                        <a style="margin-right: 10px;" [routerLink]="['/help/scoring']">Scoring Help</a>
+                        <button class="btn btn-primary">Submit</button>
+                        <!-- <input type="submit" value="Submit" class="btn btn-primary"> -->
+                    </td>                  
+                </tr>
+              </tbody>
+            </table>
+          </form>
+          </div>
+  
+        </div>
+      </div>
+    </section>
