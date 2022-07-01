@@ -1,0 +1,254 @@
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+import { AuthenticationService } from 'src/app/_services/authentication.service';
+import { NotificationService } from 'src/app/_services/notification.service';
+import { SharedDataService } from 'src/app/_services/shared.service';
+import { PositionsDTO } from '../models/PositionsDTO';
+import { ScoringItemsDTO } from '../models/ScoringItemsDTO';
+import { FormGroup,FormBuilder, FormControl, Validators } from '@angular/forms'
+import { FormArray } from '@angular/forms';
+import { SetScrSys } from '../models/SetScrSysDTO';
+import { Router } from '@angular/router';
+import { debug } from 'console';
+
+@Component({
+  selector: 'app-show-scoring',
+  templateUrl: './show-scoring.component.html',
+  styleUrls: ['./show-scoring.component.css']
+})
+export class ShowScoringComponent implements OnInit {
+  commonObject={category:{},position:{}} as any
+  category:ScoringItemsDTO=null;
+  position:PositionsDTO=null;
+  positionType:string=null;
+  public router: Router;
+  lessOrGreater:string="";
+  status:string="";
+  textBoxValues:any
+  scoringDetails:[];    
+  scoringOrderedArray:string;  
+  scoringUnOrderedArray:any=[];
+  scoringArray:any=[];
+  public scoringDetailForm: FormGroup;  
+  proRatedFields:FormArray;
+  noProRatedFields:FormArray;
+  textBoxValuesFields:FormArray;  
+  
+  constructor(
+    public shareDataService: SharedDataService,
+    private _notification:NotificationService,
+    private myAuth:AuthenticationService,    
+    private fb: FormBuilder) { 
+      this.scoringDetailForm = this.fb.group({
+        proRatedFields: this.fb.array([ this.createProRatedFields() ]),
+        noProRatedFields: this.fb.array([this.createNoProRatedFields()]),
+        textBoxValuesFields: this.fb.array([this.createTextBoxValuesFields()])
+     });
+    }
+
+  ngOnInit(): void {
+    debugger
+    this.scoringDetailForm.controls.textBoxValuesFields = new FormArray([]);
+    this.getvalues();  
+    this.addProRatedFields();    
+    this.addNoProRatedFields();       
+  }
+  createProRatedFields(): FormGroup {
+    return this.fb.group({
+      numericProPt: ['',Validators.required],
+      numericFromPro: ['',Validators.required],
+      numericToPro: ['',Validators.required]      
+    });
+ }
+ createTextBoxValuesFields(): FormGroup {
+  return this.fb.group({
+    numericNoProPt: ['',Validators.required],
+    numericFromNoPro: ['',Validators.required],
+    numericToNoPro: ['',Validators.required]      
+  });
+}
+
+createNoProRatedFields(): FormGroup {
+  return this.fb.group({
+    numericNoProPt: ['',Validators.required],
+    numericFromNoPro: ['',Validators.required],
+    numericToNoPro: ['',Validators.required]      
+  });
+}    
+  addProRatedFields(): void {
+    for (let index = 0; index < 2; index++) {
+      this.proRatedFields = this.scoringDetailForm.get('proRatedFields') as FormArray;
+      this.proRatedFields.push(this.createProRatedFields());  
+    }    
+  }
+  addNoProRatedFields(): void {
+    for (let index = 0; index < 3; index++) {      
+      this.noProRatedFields = this.scoringDetailForm.get('noProRatedFields') as FormArray;
+      this.noProRatedFields.push(this.createNoProRatedFields());  
+    }    
+  }
+  setTextBoxValuesFields(): void {    
+    debugger;    
+    if(this.textBoxValues.length>0){
+    var arrayObject = this.textBoxValues.map(function(item){ 
+      return { numericNoProPt: item[0], numericFromNoPro: item[1],numericToNoPro: item[2]};
+    });    
+  
+    console.log(arrayObject);
+    // let item=this.textBoxValues.length;
+    // debugger
+    arrayObject.map((item, index) => {
+      this.textBoxValuesFields = this.scoringDetailForm.get('textBoxValuesFields') as FormArray;
+      this.textBoxValuesFields.push(this.createTextBoxValuesFields());
+      (<FormArray>this.scoringDetailForm.get("textBoxValuesFields")).controls[index]
+        .get("numericNoProPt")
+        .setValue(item.numericNoProPt);
+      (<FormArray>this.scoringDetailForm.get("textBoxValuesFields")).controls[index]
+        .get("numericFromNoPro")
+        .setValue(item.numericFromNoPro);
+        (<FormArray>this.scoringDetailForm.get("textBoxValuesFields")).controls[index]
+        .get("numericToNoPro")
+        .setValue(item.numericToNoPro);
+      /* this.practiceSet.get(index + "").patchValue({
+        skillone: item.skillone,
+        skilltwo: item.skilltwo
+      }); */
+    });
+  }
+      
+  }
+  get proRatedControls() {
+    return this.scoringDetailForm.get('proRatedFields')['controls'];
+  }
+  get noProRatedControls() {
+    return this.scoringDetailForm.get('noProRatedFields')['controls'];
+  }
+  get textBoxValuesControls() {
+    return this.scoringDetailForm.get('textBoxValuesFields')['controls'];
+  }
+  AddProRatedControl()
+  {
+    this.proRatedFields = this.scoringDetailForm.get('proRatedFields') as FormArray;
+    this.proRatedFields.push(this.createProRatedFields());
+    if(this.proRatedFields.length>1)
+      this.disableProrated=false; 
+  }
+  AddNoProRatedControl()
+  { 
+    this.noProRatedFields = this.scoringDetailForm.get('noProRatedFields') as FormArray;  
+    this.noProRatedFields.push(this.createNoProRatedFields()); 
+    if(this.noProRatedFields.length>1)
+      this.disableNoProrated=false;
+  }
+  disableProrated=false;
+  RemoveProRatedControl(i:number)
+  {    
+    this.proRatedFields = this.scoringDetailForm.get('proRatedFields') as FormArray;    
+    if(this.proRatedFields.length>1)
+      this.proRatedFields.removeAt(i); 
+    if(this.proRatedFields.length==1)  
+      this.disableProrated=true;        
+  }
+  disableNoProrated=false;
+  RemoveNoProRatedControl(i:number)
+  { 
+    this.noProRatedFields = this.scoringDetailForm.get('noProRatedFields') as FormArray;
+    if(this.noProRatedFields.length>1)   
+      this.noProRatedFields.removeAt(i); 
+    if(this.noProRatedFields.length==1)
+      this.disableNoProrated=true;
+  }
+  onSubmit()
+  {
+    debugger
+    console.log(this.proRatedFields)
+    if(this.scoringDetailForm.valid){    
+    this.getFormValues();
+    this.scoringOrderedArray=this.transformArray();    
+    this.addScoring();    
+    }
+    else    
+    return this.scoringDetailForm.markAllAsTouched();
+  }  
+  getFormValues()
+  {      
+    this.scoringUnOrderedArray=[];
+    for (const key of Object.keys(this.scoringDetailForm.controls)) {
+      this.scoringDetails=this.scoringDetailForm.controls[key].value;          
+        
+      for (let data of Object.values(this.scoringDetails)) {     
+           debugger                      
+           let i=1; 
+           for (let d of Object.values(data)) {                        
+             if(i<3)
+              this.scoringUnOrderedArray.push(d);
+             else
+             this.scoringUnOrderedArray.push(0);
+             i++;            
+           } 
+           this.scoringUnOrderedArray.push("|");       
+      }
+    }    
+  }
+  transformArray()
+  { 
+    debugger   
+    this.scoringOrderedArray = this.scoringUnOrderedArray.toString();   
+    let colon = /\,/gi;      
+    var ordered=this.scoringOrderedArray.replace(colon,":");
+    let pattern = /\:\|\:|\:\|/gi; // Regex to replace ":|: or ":|"
+    var ordered2=ordered.replace(pattern,"|");    
+    return ordered2;
+  }
+  async addScoring()
+  {
+    
+    var obj={} as SetScrSys; 
+    obj.scoringOrderedArray=this.scoringOrderedArray;
+    // obj.posId="k";
+    // obj.scrId="fg_missed_fg";  
+    obj.scrId=this.category.code; 
+    obj.posId=this.position.type;
+    obj.bDelete=1;    
+     this.myAuth.addScoring(obj).subscribe((response:any) => {            
+          this._notification.success('Successfully added!');                     
+        },
+        (error)=>{ 
+          
+          this._notification.error('something went wrong')
+        }
+      );
+  }
+  
+        
+  getvalues(){
+    debugger
+    this.shareDataService.getCategoryPosition.subscribe(res => {                   
+      this.commonObject=res              
+      this.category=this.commonObject.category;
+      this.position=this.commonObject.position;                            
+    });    
+    this.category=JSON.parse(localStorage.getItem("scoringSystemSelectedCategory"));
+    this.position=JSON.parse(localStorage.getItem("scoringSystemSelectedPosition")); 
+    this.status=localStorage.getItem("status");
+    if(this.status==="edit")
+    {
+      this.shareDataService.getTextBoxValues.subscribe(res=>{
+        debugger
+        this.textBoxValues=res;        
+      })
+      this.textBoxValues=JSON.parse(localStorage.getItem("textBoxvalues"));
+      this.setTextBoxValuesFields();
+    }
+    this.positionType=this.position.type;
+    if(this.position.type==="df")
+      this.lessOrGreater="less than"
+    else
+    this.lessOrGreater="greater than"    
+}
+
+
+
+}
+
+
